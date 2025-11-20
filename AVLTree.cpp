@@ -2,18 +2,63 @@
 
 #include <string>
 
+AVLTree::AVLNode::AVLNode() : key(), value(), height(1), left(nullptr), right(nullptr) {}
+AVLTree::AVLNode::AVLNode(const KeyType& k, const ValueType& v) : key(k), value(v), height(1), left(nullptr), right(nullptr) {}
+
+//0,1, or 2 children
 size_t AVLTree::AVLNode::numChildren() const {
-    return 0;
+    size_t count = 0;
+	if (left) ++count;
+	if (right) ++count;
+	return count;
 }
 
+//true if leaf
 bool AVLTree::AVLNode::isLeaf() const {
-    return false;
+    return !left && !right;
 }
 
 size_t AVLTree::AVLNode::getHeight() const {
-    return 0;
+    return height;
 }
 
+//height/balance/rotation helpers
+size_t AVLTree::heightOf(AVLNode* node) const {
+	return node ? node->height : 0;
+}
+
+int AVLTree::balanceOf(AVLNode* node) const {
+	if (!node) return 0;
+	return static_cast<int>(heightOf(node->left)) - static_cast<int>(heightOf(node->right));
+}
+
+void AVLTree::rotateLeft(AVLNode*& node) {
+	if (!node || !node->right) return;
+	AVLNode* newRoot = node->right;
+	AVLNode* movedSubtree = newRoot->left;
+	newRoot->left = node;
+	node->right = movedSubtree;
+
+	node->height = 1 + std::max(heightOf(node->left), heightOf(node->right));
+	newRoot->height = 1 + std::max(heightOf(newRoot->left), heightOf(newRoot->right));
+	node = newRoot;
+}
+
+void AVLTree::rotateRight(AVLNode*& node) {
+	if (!node || !node->left) return;
+	AVLNode* newRoot = node->left;
+	AVLNode* movedSubtree = newRoot->right;
+	newRoot->right = node;
+	node->left = movedSubtree;
+
+	node->height = 1 + std::max(heightOf(node->left), heightOf(node->right));
+	newRoot->height = 1 + std::max(heightOf(newRoot->left), heightOf(newRoot->right));
+	node = newRoot;
+}
+
+
+
+//remove helpers
 bool AVLTree::removeNode(AVLNode*& current){
     if (!current) {
         return false;
@@ -59,8 +104,53 @@ bool AVLTree::removeNode(AVLNode*& current){
 }
 
 bool AVLTree::remove(AVLNode *&current, KeyType key) {
-    return false;
+    if (!current) {
+		return false;
+	}
+	bool removed = false;
+
+	if (key < current->key) {
+		//look in left subtree
+		removed = remove(current->left, key);
+	} else if (key > current->key) {
+		//look in right subtree
+		removed = remove(current->right, key);
+	} else {
+		//found node
+		removed = removeNode(current);
+	}
+
+	//after removal updae node's height and rebalance
+	if (removed && current) {
+		current->height = 1 + std::max(heightOf(current->left), heightOf(current->right));
+		balanceNode(current);
+	}
+	return removed;
 }
 
 void AVLTree::balanceNode(AVLNode *&node) {
+	if (!node) return;
+	//updating nodes height
+	node->height = 1 + std::max(heightOf(node->left), heightOf(node->right));
+
+	int balanceFactor = balanceOf(node);
+
+	//left heavy
+	if (balanceFactor > 1) {
+		//left child right heavy
+		if (balanceOf(node->left) < 0) {
+			rotateLeft(node->left);
+		}
+		//left-left case
+		rotateRight(node);
+	}
+	//right heavy
+	else if (balanceFactor < -1) {
+		//right child left heavy
+		if (balanceOf(node->right) > 0) {
+			rotateRight(node->right);
+		}
+		//right-right case
+		rotateLeft(node);
+	}
 }
