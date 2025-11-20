@@ -252,3 +252,42 @@ AVLTree::ValueType& AVLTree::operator[](const KeyType& key)
 	AVLNode* current = findNode(root, key);
 	return current->value;
 }
+
+void AVLTree::findRange(AVLNode* current, const KeyType& minKey, const KeyType& maxKey, vector<ValueType>& out) const
+{
+	if (!current) return;
+	if (current->key < minKey)
+	{
+		findRange(current->left, minKey, maxKey, out);
+	}
+	if (current->key >= minKey && current->key <= maxKey)
+	{
+		out.push_back(current->value);
+	}
+	if (current->key > maxKey)
+	{
+		findRange(current->right, minKey, maxKey, out);
+	}
+}
+
+vector<AVLTree::ValueType> AVLTree::findRange(const KeyType& minKey, const KeyType& maxKey) const
+{
+	vector<ValueType> out;
+	findRange(root, minKey, maxKey, out);
+	return out;
+}
+
+void AVLTree::collectKeys(AVLNode* current, vector<KeyType>& out) const
+{
+	if (!current) return;
+	collectKeys(current->left, out);
+	out.push_back(current->key);
+	collectKeys(current->right, out);
+}
+
+vector<AVLTree::KeyType> AVLTree::keys() const
+{
+	vector<KeyType> out;
+	collectKeys(root, out);
+	return out;
+}
