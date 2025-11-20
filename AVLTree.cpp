@@ -291,3 +291,49 @@ vector<AVLTree::KeyType> AVLTree::keys() const
 	collectKeys(root, out);
 	return out;
 }
+
+size_t AVLTree::size() const
+{
+	return nodeCount;
+}
+
+size_t AVLTree::getHeight() const
+{
+	return heightOf(root);
+}
+
+AVLTree::AVLNode* AVLTree::cloneSubtree(const AVLNode* otherRoot)
+{
+	if (!otherRoot) return nullptr;
+	AVLNode* newNode = new AVLNode(otherRoot->key, otherRoot->value);
+	newNode->height = otherRoot->height;
+	newNode->left = cloneSubtree(otherRoot->left);
+	newNode->right = cloneSubtree(otherRoot->right);
+	return newNode;
+}
+
+void AVLTree::destroySubtree(AVLNode* current)
+{
+	if (!current) return;
+	destroySubtree(current->left);
+	destroySubtree(current->right);
+	delete current;
+}
+
+void AVLTree::printSideways(ostream& os, const AVLNode* current, size_t depth) const
+{
+	if (!current) return;
+	printSideways(os, current->right, depth + 1);
+	for (size_t i = 0; i < depth; i++)
+	{
+		os << " ";
+	}
+	os << '{' << current->key << ', ' << current->value << "}\n";
+	printSideways(os, current->left, depth + 1);
+}
+
+ostream& operator<<(ostream& os, const AVLTree& tree)
+{
+	tree.printSideways(os, tree.root, 0);
+	return os;
+}
