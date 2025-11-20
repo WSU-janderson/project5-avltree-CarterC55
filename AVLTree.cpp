@@ -1,6 +1,7 @@
 #include "AVLTree.h"
 
 #include <string>
+#include <algorithm>
 
 AVLTree::AVLNode::AVLNode() : key(), value(), height(1), left(nullptr), right(nullptr) {}
 AVLTree::AVLNode::AVLNode(const KeyType& k, const ValueType& v) : key(k), value(v), height(1), left(nullptr), right(nullptr) {}
@@ -69,6 +70,10 @@ AVLTree& AVLTree::operator=(const AVLTree& other)
 	{
 		return *this;
 	}
+	destroySubtree(root);
+	root = cloneSubtree(other.root);
+	nodeCount = other.nodeCount;
+	return *this;
 }
 
 AVLTree::~AVLTree()
@@ -189,6 +194,16 @@ bool AVLTree::remove(AVLNode *&current, KeyType key) {
 	return removed;
 }
 
+bool AVLTree::remove(const KeyType& key)
+{
+	bool removed = remove(root, key);
+	if (removed)
+	{
+		nodeCount--;
+	}
+	return removed;
+}
+
 void AVLTree::balanceNode(AVLNode *&node) {
 	if (!node) return;
 	//updating nodes height
@@ -256,7 +271,7 @@ AVLTree::ValueType& AVLTree::operator[](const KeyType& key)
 void AVLTree::findRange(AVLNode* current, const KeyType& minKey, const KeyType& maxKey, vector<ValueType>& out) const
 {
 	if (!current) return;
-	if (current->key < minKey)
+	if (current->key > minKey)
 	{
 		findRange(current->left, minKey, maxKey, out);
 	}
@@ -264,7 +279,7 @@ void AVLTree::findRange(AVLNode* current, const KeyType& minKey, const KeyType& 
 	{
 		out.push_back(current->value);
 	}
-	if (current->key > maxKey)
+	if (current->key < maxKey)
 	{
 		findRange(current->right, minKey, maxKey, out);
 	}
@@ -299,7 +314,8 @@ size_t AVLTree::size() const
 
 size_t AVLTree::getHeight() const
 {
-	return heightOf(root);
+	if (!root) return 0;
+	return root->height - 1;
 }
 
 AVLTree::AVLNode* AVLTree::cloneSubtree(const AVLNode* otherRoot)
@@ -328,7 +344,7 @@ void AVLTree::printSideways(ostream& os, const AVLNode* current, size_t depth) c
 	{
 		os << " ";
 	}
-	os << '{' << current->key << ', ' << current->value << "}\n";
+	os << '{' << current->key << ", " << current->value << "}\n";
 	printSideways(os, current->left, depth + 1);
 }
 
