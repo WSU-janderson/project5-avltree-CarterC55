@@ -56,6 +56,27 @@ void AVLTree::rotateRight(AVLNode*& node) {
 	node = newRoot;
 }
 
+AVLTree::AVLTree() : root(nullptr), nodeCount(0) {}
+AVLTree::AVLTree(const AVLTree& other) : root(nullptr), nodeCount(0)
+{
+	root = cloneSubtree(other.root);
+	nodeCount = other.nodeCount;
+}
+
+AVLTree& AVLTree::operator=(const AVLTree& other)
+{
+	if (this == &other)
+	{
+		return *this;
+	}
+}
+
+AVLTree::~AVLTree()
+{
+	destroySubtree(root);
+	root = nullptr;
+	nodeCount = 0;
+}
 
 //insert
 bool AVLTree::insert(AVLNode*& current, const KeyType& key, ValueType value)
