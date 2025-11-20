@@ -215,3 +215,40 @@ void AVLTree::balanceNode(AVLNode *&node) {
 		rotateLeft(node);
 	}
 }
+
+
+AVLTree::AVLNode* AVLTree::findNode(AVLNode* current, const KeyType& key) const
+{
+	while (current)
+	{
+		if (key < current->key)
+		{
+			current = current->left;
+		} else if (key > current->key)
+		{
+			current = current->right;
+		} else
+		{
+			return current;
+		}
+	}
+	return nullptr;
+}
+
+bool AVLTree::contains(const KeyType& key) const
+{
+	return findNode(root, key) != nullptr;
+}
+
+optional<AVLTree::ValueType> AVLTree::get(const KeyType& key) const
+{
+	AVLNode* current = findNode(root, key);
+	if (!current) return std::nullopt;
+	return current->value;
+}
+
+AVLTree::ValueType& AVLTree::operator[](const KeyType& key)
+{
+	AVLNode* current = findNode(root, key);
+	return current->value;
+}
