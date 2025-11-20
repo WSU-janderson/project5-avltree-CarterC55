@@ -57,6 +57,46 @@ void AVLTree::rotateRight(AVLNode*& node) {
 }
 
 
+//insert
+bool AVLTree::insert(AVLNode*& current, const KeyType& key, ValueType value)
+{
+	if (!current)
+	{
+		current = new AVLNode(key, value);
+		return true; //new node inserted
+	}
+
+	bool inserted = false;
+	if (key < current->key)
+	{
+		inserted = insert(current->left, key, value);
+	} else if (key > current->key)
+	{
+		inserted = insert(current->right, key, value);
+	} else
+	{	//duplicate key
+		return false;
+	}
+
+	if (inserted)
+		//update height and rebalance
+	{
+		current->height = 1+ std::max(heightOf(current->left), heightOf(current->right));
+		balanceNode(current);
+	}
+	return inserted;
+}
+
+bool AVLTree::insert(const KeyType& key, ValueType value)
+{
+	bool inserted = insert(root, key, value);
+	if (inserted)
+	{
+		nodeCount++;
+	}
+	return inserted;
+}
+
 
 //remove helpers
 bool AVLTree::removeNode(AVLNode*& current){
